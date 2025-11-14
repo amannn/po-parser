@@ -1,6 +1,11 @@
 {
   "name": "po-parser",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "homepage": "https://github.com/amannn/po-parser",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:amannn/po-parser.git"
+  },
   "description": "Parses and serializes `.po` file content.",
   "main": "dist/index.js",
   "type": "module",
