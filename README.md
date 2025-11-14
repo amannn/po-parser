@@ -14,7 +14,6 @@ import POParser from 'po-parser';
 const content = `
 msgid ""
 msgstr ""
-
 "POT-Creation-Date: 2025-10-27 16:00+0000\n"
 
 #: src/Greeting.tsx
@@ -22,6 +21,7 @@ msgstr ""
 msgid "+YJVTi"
 msgstr "Hey"
 `;
+
 const result = POParser.parse(content);
 ```
 

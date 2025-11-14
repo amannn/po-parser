@@ -12,10 +12,10 @@
   },
   "keywords": [
     "po",
-    "parser",
-    "serializer"
+    "parse",
+    "serialize"
   ],
-  "author": "Jan Amann",
+  "author": "Jan Amann <jan@amann.work>",
   "license": "MIT",
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
