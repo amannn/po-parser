@@ -1,0 +1,26 @@
+{
+  "name": "po-parser",
+  "version": "0.1.0",
+  "description": "Parses and serializes `.po` file content.",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "bunchee",
+    "lint": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "pnpm lint && pnpm test && pnpm build"
+  },
+  "keywords": [
+    "po",
+    "parse",
+    "serialize"
+  ],
+  "author": "Jan Amann <jan@amann.work>",
+  "license": "MIT",
+  "packageManager": "pnpm@10.17.1",
+  "devDependencies": {
+    "bunchee": "^6.6.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.9"
+  }
+}
