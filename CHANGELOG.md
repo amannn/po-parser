@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1](https://github.com/amannn/po-parser/compare/v1.0.0...v1.0.1) (2025-11-24)
+
+### Bug Fixes
+
+* Add publish step for CI ([3088b6b](https://github.com/amannn/po-parser/commit/3088b6b625b86d600e659f18532935ec7016816f))
+
 ## 1.0.0 (2025-11-24)
 
 ### Features
