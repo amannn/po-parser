@@ -49,11 +49,7 @@ export default class POParser {
     '"': '"',
     '\n': 'n',
     '\r': 'r',
-    '\t': 't',
-    '\f': 'f',
-    '\v': 'v',
-    '\u0007': 'a',
-    '\u0008': 'b'
+    '\t': 't'
   };
   private static readonly UNESCAPE_LOOKUP: Record<string, string> =
     Object.entries(POParser.ESCAPE_LOOKUP).reduce<Record<string, string>>(
@@ -88,7 +84,7 @@ export default class POParser {
       if (state === 'meta') {
         if (line.startsWith(POParser.QUOTE)) {
           const rawMetaLine = POParser.extractQuotedString(line, state);
-          const metaLine = POParser.unescapePoString(rawMetaLine);
+          const metaLine = POParser.unescape(rawMetaLine);
           const cleaned = metaLine.endsWith('\n')
             ? metaLine.slice(0, -1)
             : metaLine;
@@ -169,7 +165,7 @@ export default class POParser {
         // msgctxt
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGCTXT)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgctxt = POParser.unescapePoString(
+          entry.msgctxt = POParser.unescape(
             POParser.extractQuotedString(
               line.substring(POParser.KEYWORDS.MSGCTXT.length + 1),
               state
@@ -181,7 +177,7 @@ export default class POParser {
         // msgid
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGID)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgid = POParser.unescapePoString(
+          entry.msgid = POParser.unescape(
             POParser.extractQuotedString(
               line.substring(POParser.KEYWORDS.MSGID.length + 1),
               state
@@ -198,7 +194,7 @@ export default class POParser {
         // msgstr
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGSTR)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgstr = POParser.unescapePoString(
+          entry.msgstr = POParser.unescape(
             POParser.extractQuotedString(
               line.substring(POParser.KEYWORDS.MSGSTR.length + 1),
               state
@@ -250,7 +246,7 @@ export default class POParser {
       );
       for (const [key, value] of Object.entries(catalog.meta)) {
         lines.push(
-          `${POParser.QUOTE}${key}${POParser.META_SEPARATOR} ${POParser.escapePoString(
+          `${POParser.QUOTE}${key}${POParser.META_SEPARATOR} ${POParser.escape(
             value
           )}${POParser.NEWLINE}${POParser.QUOTE}`
         );
@@ -294,19 +290,19 @@ export default class POParser {
 
         if (msgctxt) {
           lines.push(
-            `${POParser.KEYWORDS.MSGCTXT} ${POParser.QUOTE}${POParser.escapePoString(
+            `${POParser.KEYWORDS.MSGCTXT} ${POParser.QUOTE}${POParser.escape(
               msgctxt
             )}${POParser.QUOTE}`
           );
         }
 
         lines.push(
-          `${POParser.KEYWORDS.MSGID} ${POParser.QUOTE}${POParser.escapePoString(
+          `${POParser.KEYWORDS.MSGID} ${POParser.QUOTE}${POParser.escape(
             msgid
           )}${POParser.QUOTE}`
         );
         lines.push(
-          `${POParser.KEYWORDS.MSGSTR} ${POParser.QUOTE}${POParser.escapePoString(
+          `${POParser.KEYWORDS.MSGSTR} ${POParser.QUOTE}${POParser.escape(
             message.message
           )}${POParser.QUOTE}`
         );
@@ -366,37 +362,18 @@ export default class POParser {
       POParser.throwWithLine('Incomplete quoted string', line);
     }
 
-    let endIndex = -1;
-    let escaped = false;
-
-    for (let i = POParser.QUOTE.length; i < trimmed.length; i++) {
-      const char = trimmed[i];
-
-      if (!escaped) {
-        if (char === '\\') {
-          escaped = true;
-          continue;
-        }
-        if (char === POParser.QUOTE) {
-          endIndex = i;
-          break;
-        }
-      } else {
-        escaped = false;
-      }
-    }
-
-    if (endIndex === -1) {
+    if (!trimmed.endsWith(POParser.QUOTE)) {
       if (state === 'meta') {
         return trimmed.substring(POParser.QUOTE.length);
       }
       POParser.throwWithLine('Incomplete quoted string', line);
     }
 
+    const endIndex = trimmed.length - POParser.QUOTE.length;
     return trimmed.substring(POParser.QUOTE.length, endIndex);
   }
 
-  private static escapePoString(value: string): string {
+  private static escape(value: string): string {
     let result = '';
     for (const char of value) {
       const mapped = POParser.ESCAPE_LOOKUP[char];
@@ -405,7 +382,7 @@ export default class POParser {
     return result;
   }
 
-  private static unescapePoString(value: string): string {
+  private static unescape(value: string): string {
     let result = '';
     for (let i = 0; i < value.length; i++) {
       const char = value[i];
