@@ -342,7 +342,30 @@ export default class POParser {
 
   private static extractQuotedString(line: string, state?: State): string {
     const trimmed = line.trim();
-    const endIndex = trimmed.indexOf(POParser.QUOTE, POParser.QUOTE.length);
+
+    if (!trimmed.startsWith(POParser.QUOTE)) {
+      POParser.throwWithLine('Incomplete quoted string', line);
+    }
+
+    let endIndex = -1;
+    let escaped = false;
+
+    for (let i = POParser.QUOTE.length; i < trimmed.length; i++) {
+      const char = trimmed[i];
+
+      if (!escaped) {
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        if (char === POParser.QUOTE) {
+          endIndex = i;
+          break;
+        }
+      } else {
+        escaped = false;
+      }
+    }
 
     if (endIndex === -1) {
       if (state === 'meta') {

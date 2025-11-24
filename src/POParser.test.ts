@@ -681,4 +681,21 @@ describe('serialize', () => {
       "
     `);
   });
+
+  it('serializes strings containing special characters', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            id: 'hello',
+            message: 'Line 1\nLine "2" with \\ tab\tcarriage\rreturn'
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "msgid "hello"
+      msgstr "Line 1\\nLine \\"2\\" with \\\\ tab\\tcarriage\\rreturn"
+      "
+    `);
+  });
 });
