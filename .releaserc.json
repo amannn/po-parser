@@ -5,11 +5,11 @@
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     ["@semantic-release/changelog", {"changelogTitle": "# Changelog"}],
+    "@semantic-release/npm",
     [
       "@semantic-release/github",
       {
-        "failComment": false,
-        "failTitle": false,
+        "successComment": false,
         "releasedLabels": false
       }
     ],
