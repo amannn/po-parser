@@ -44,6 +44,25 @@ export default class POParser {
   private static readonly FILE_COLUMN_SEPARATOR = ':';
   private static readonly META_SEPARATOR = ':';
   private static readonly FLAG_SEPARATOR = ', ';
+  private static readonly ESCAPE_LOOKUP: Record<string, string> = {
+    '\\': '\\',
+    '"': '"',
+    '\n': 'n',
+    '\r': 'r',
+    '\t': 't',
+    '\f': 'f',
+    '\v': 'v',
+    '\u0007': 'a',
+    '\u0008': 'b'
+  };
+  private static readonly UNESCAPE_LOOKUP: Record<string, string> =
+    Object.entries(POParser.ESCAPE_LOOKUP).reduce<Record<string, string>>(
+      (acc, [char, code]) => {
+        acc[code] = char;
+        return acc;
+      },
+      {}
+    );
 
   public static parse(content: string): Catalog {
     const lines = POParser.splitLines(content);
@@ -378,42 +397,29 @@ export default class POParser {
   }
 
   private static escapePoString(value: string): string {
-    return value
-      .replace(/\\/g, '\\\\')
-      .replace(/"/g, '\\"')
-      .replace(/\r/g, '\\r')
-      .replace(/\n/g, '\\n')
-      .replace(/\t/g, '\\t')
-      .replace(/\f/g, '\\f')
-      .replace(/\v/g, '\\v')
-      .replace(/\u0008/g, '\\b')
-      .replace(/\u0007/g, '\\a');
+    let result = '';
+    for (const char of value) {
+      const mapped = POParser.ESCAPE_LOOKUP[char];
+      result += mapped != null ? `\\${mapped}` : char;
+    }
+    return result;
   }
 
   private static unescapePoString(value: string): string {
-    return value.replace(/\\([\\nrt"favb])/g, (match, char) => {
-      switch (char) {
-        case '\\':
-          return '\\';
-        case '"':
-          return '"';
-        case 'n':
-          return '\n';
-        case 'r':
-          return '\r';
-        case 't':
-          return '\t';
-        case 'f':
-          return '\f';
-        case 'v':
-          return '\v';
-        case 'a':
-          return '\u0007';
-        case 'b':
-          return '\b';
-        default:
-          return match;
+    let result = '';
+    for (let i = 0; i < value.length; i++) {
+      const char = value[i];
+      if (char === '\\' && i + 1 < value.length) {
+        const nextChar = value[i + 1];
+        const mapped = POParser.UNESCAPE_LOOKUP[nextChar];
+        if (mapped != null) {
+          result += mapped;
+          i++;
+          continue;
+        }
       }
-    });
+      result += char;
+    }
+    return result;
   }
 }
