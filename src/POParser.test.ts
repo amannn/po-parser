@@ -413,6 +413,22 @@ msgstr "Goodbye"
     });
   });
 
+  it('unescapes escaped characters inside entries', () => {
+    expect(
+      POParser.parse(`
+msgid "hello"
+msgstr "Line 1\\nLine \\"2\\" with \\\\"
+`)
+    ).toEqual({
+      messages: [
+        {
+          id: 'hello',
+          message: 'Line 1\nLine "2" with \\'
+        }
+      ]
+    });
+  });
+
   describe('error handling', () => {
     it('throws for incomplete quoted strings', () => {
       expect(() =>

@@ -68,9 +68,10 @@ export default class POParser {
 
       if (state === 'meta') {
         if (line.startsWith(POParser.QUOTE)) {
-          const metaLine = POParser.extractQuotedString(line, state);
-          const cleaned = metaLine.endsWith(POParser.NEWLINE)
-            ? metaLine.slice(0, -2)
+          const rawMetaLine = POParser.extractQuotedString(line, state);
+          const metaLine = POParser.unescapePoString(rawMetaLine);
+          const cleaned = metaLine.endsWith('\n')
+            ? metaLine.slice(0, -1)
             : metaLine;
 
           const separatorIndex = cleaned.indexOf(POParser.META_SEPARATOR);
@@ -149,9 +150,11 @@ export default class POParser {
         // msgctxt
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGCTXT)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgctxt = POParser.extractQuotedString(
-            line.substring(POParser.KEYWORDS.MSGCTXT.length + 1),
-            state
+          entry.msgctxt = POParser.unescapePoString(
+            POParser.extractQuotedString(
+              line.substring(POParser.KEYWORDS.MSGCTXT.length + 1),
+              state
+            )
           );
           continue;
         }
@@ -159,9 +162,11 @@ export default class POParser {
         // msgid
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGID)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgid = POParser.extractQuotedString(
-            line.substring(POParser.KEYWORDS.MSGID.length + 1),
-            state
+          entry.msgid = POParser.unescapePoString(
+            POParser.extractQuotedString(
+              line.substring(POParser.KEYWORDS.MSGID.length + 1),
+              state
+            )
           );
 
           if (POParser.isMetaEntry(entry, messages)) {
@@ -174,9 +179,11 @@ export default class POParser {
         // msgstr
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGSTR)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgstr = POParser.extractQuotedString(
-            line.substring(POParser.KEYWORDS.MSGSTR.length + 1),
-            state
+          entry.msgstr = POParser.unescapePoString(
+            POParser.extractQuotedString(
+              line.substring(POParser.KEYWORDS.MSGSTR.length + 1),
+              state
+            )
           );
 
           if (POParser.isMetaEntry(entry, messages)) {
@@ -224,7 +231,9 @@ export default class POParser {
       );
       for (const [key, value] of Object.entries(catalog.meta)) {
         lines.push(
-          `${POParser.QUOTE}${key}${POParser.META_SEPARATOR} ${value}${POParser.NEWLINE}${POParser.QUOTE}`
+          `${POParser.QUOTE}${key}${POParser.META_SEPARATOR} ${POParser.escapePoString(
+            value
+          )}${POParser.NEWLINE}${POParser.QUOTE}`
         );
       }
       lines.push('');
@@ -266,15 +275,21 @@ export default class POParser {
 
         if (msgctxt) {
           lines.push(
-            `${POParser.KEYWORDS.MSGCTXT} ${POParser.QUOTE}${msgctxt}${POParser.QUOTE}`
+            `${POParser.KEYWORDS.MSGCTXT} ${POParser.QUOTE}${POParser.escapePoString(
+              msgctxt
+            )}${POParser.QUOTE}`
           );
         }
 
         lines.push(
-          `${POParser.KEYWORDS.MSGID} ${POParser.QUOTE}${msgid}${POParser.QUOTE}`
+          `${POParser.KEYWORDS.MSGID} ${POParser.QUOTE}${POParser.escapePoString(
+            msgid
+          )}${POParser.QUOTE}`
         );
         lines.push(
-          `${POParser.KEYWORDS.MSGSTR} ${POParser.QUOTE}${message.message}${POParser.QUOTE}`
+          `${POParser.KEYWORDS.MSGSTR} ${POParser.QUOTE}${POParser.escapePoString(
+            message.message
+          )}${POParser.QUOTE}`
         );
         lines.push('');
       }
@@ -337,5 +352,45 @@ export default class POParser {
     }
 
     return trimmed.substring(POParser.QUOTE.length, endIndex);
+  }
+
+  private static escapePoString(value: string): string {
+    return value
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n')
+      .replace(/\t/g, '\\t')
+      .replace(/\f/g, '\\f')
+      .replace(/\v/g, '\\v')
+      .replace(/\u0008/g, '\\b')
+      .replace(/\u0007/g, '\\a');
+  }
+
+  private static unescapePoString(value: string): string {
+    return value.replace(/\\([\\nrt"favb])/g, (match, char) => {
+      switch (char) {
+        case '\\':
+          return '\\';
+        case '"':
+          return '"';
+        case 'n':
+          return '\n';
+        case 'r':
+          return '\r';
+        case 't':
+          return '\t';
+        case 'f':
+          return '\f';
+        case 'v':
+          return '\v';
+        case 'a':
+          return '\u0007';
+        case 'b':
+          return '\b';
+        default:
+          return match;
+      }
+    });
   }
 }
