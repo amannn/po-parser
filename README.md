@@ -46,3 +46,20 @@ const catalog = {
 
 const result = POParser.serialize(catalog);
 ```
+
+## Supported features
+
+- `msgid` and `msgstr` (message entries)
+- `msgctxt` (message context for namespacing)
+- References (`#:` comments)
+- Extracted comments (`#.` comments, used as descriptions)
+- Flag comments (`#,` comments, e.g. `#, fuzzy`)
+- Metadata (from empty `msgid`/`msgstr` entry at the beginning)
+- Single-line quoted strings
+
+## Unsupported features
+
+- Translator comments (`#` comments)
+- Previous string key comments (`#|` comments)
+- Plural forms (`msgid_plural`)
+- Multi-line strings

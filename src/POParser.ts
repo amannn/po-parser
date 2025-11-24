@@ -1,8 +1,9 @@
-type Message = {
+export type Message = {
   id: string;
   message: string;
   description?: string;
   references?: Array<{path: string}>;
+  flags?: Array<string>;
 };
 
 type Catalog = {
@@ -18,6 +19,7 @@ type Entry = {
   msgstr?: string;
   references?: Array<{path: string}>;
   description?: string;
+  flags?: Array<string>;
 };
 
 export default class POParser {
@@ -41,6 +43,7 @@ export default class POParser {
   private static readonly NEWLINE = '\\n';
   private static readonly FILE_COLUMN_SEPARATOR = ':';
   private static readonly META_SEPARATOR = ':';
+  private static readonly FLAG_SEPARATOR = ', ';
 
   public static parse(content: string): Catalog {
     const lines = POParser.splitLines(content);
@@ -90,14 +93,24 @@ export default class POParser {
             line
           );
         }
-        if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.FLAG)) {
-          POParser.throwWithLine('Flag comments (#,) are not supported', line);
-        }
         if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.PREVIOUS)) {
           POParser.throwWithLine(
             'Previous string key comments (#|) are not supported',
             line
           );
+        }
+
+        // Flag comments
+        if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.FLAG)) {
+          entry = POParser.ensureEntry(entry);
+          const flagsText = line
+            .substring(POParser.COMMENTS.FLAG.length)
+            .trim();
+          entry.flags = flagsText
+            .split(',')
+            .map((flag) => flag.trim())
+            .filter(Boolean);
+          continue;
         }
 
         // Reference comments
@@ -230,6 +243,14 @@ export default class POParser {
           }
         }
 
+        if (message.flags && message.flags.length > 0) {
+          lines.push(
+            `${POParser.COMMENTS.FLAG} ${message.flags.join(
+              POParser.FLAG_SEPARATOR
+            )}`
+          );
+        }
+
         let msgctxt: string | undefined;
         let msgid: string;
 
@@ -299,7 +320,8 @@ export default class POParser {
       id: fullId,
       message: entry.msgstr,
       description: entry.description,
-      references: entry.references
+      references: entry.references,
+      flags: entry.flags
     };
   }
 

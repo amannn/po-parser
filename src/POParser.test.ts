@@ -480,13 +480,38 @@ msgstr "Hey"`)
       );
     });
 
-    it('throws for flag comments', () => {
-      expect(() =>
+    it('parses flag comments', () => {
+      expect(
         POParser.parse(`
 #, fuzzy
 msgid "+YJVTi"
 msgstr "Hey"`)
-      ).toThrow('Flag comments (#,) are not supported:\n> #, fuzzy');
+      ).toEqual({
+        messages: [
+          {
+            id: '+YJVTi',
+            message: 'Hey',
+            flags: ['fuzzy']
+          }
+        ]
+      });
+    });
+
+    it('parses multiple flags', () => {
+      expect(
+        POParser.parse(`
+#, fuzzy, c-format
+msgid "+YJVTi"
+msgstr "Hey"`)
+      ).toEqual({
+        messages: [
+          {
+            id: '+YJVTi',
+            message: 'Hey',
+            flags: ['fuzzy', 'c-format']
+          }
+        ]
+      });
     });
 
     it('throws for previous string key comments', () => {
@@ -599,6 +624,44 @@ describe('serialize', () => {
       msgctxt "simple"
       msgid "message"
       msgstr "Hello"
+      "
+    `);
+  });
+
+  it('serializes messages with flags', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            id: 'hello',
+            message: 'Hello World',
+            flags: ['fuzzy']
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "#, fuzzy
+      msgid "hello"
+      msgstr "Hello World"
+      "
+    `);
+  });
+
+  it('serializes messages with multiple flags', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            id: 'hello',
+            message: 'Hello World',
+            flags: ['fuzzy', 'c-format']
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "#, fuzzy, c-format
+      msgid "hello"
+      msgstr "Hello World"
       "
     `);
   });
