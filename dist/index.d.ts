@@ -20,6 +20,8 @@ declare class POParser {
     private static readonly FILE_COLUMN_SEPARATOR;
     private static readonly META_SEPARATOR;
     private static readonly FLAG_SEPARATOR;
+    private static readonly ESCAPE_LOOKUP;
+    private static readonly UNESCAPE_LOOKUP;
     static parse(content: string): Catalog;
     private static isMetaEntry;
     static serialize(catalog: Catalog): string;
@@ -29,6 +31,8 @@ declare class POParser {
     private static ensureEntry;
     private static finishEntry;
     private static extractQuotedString;
+    private static escape;
+    private static unescape;
 }
 
 export { POParser as default };
