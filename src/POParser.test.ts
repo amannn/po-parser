@@ -417,13 +417,13 @@ msgstr "Goodbye"
     expect(
       POParser.parse(`
 msgid "hello"
-msgstr "Line 1\\nLine \\"2\\" with \\\\"
+msgstr "Line 1\\nLine \\"2\\" with \\\\ tab\\tcarriage\\rreturn plain letters n r t"
 `)
     ).toEqual({
       messages: [
         {
           id: 'hello',
-          message: 'Line 1\nLine "2" with \\'
+          message: 'Line 1\nLine "2" with \\ tab\tcarriage\rreturn plain letters n r t'
         }
       ]
     });
