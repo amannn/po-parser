@@ -413,6 +413,22 @@ msgstr "Goodbye"
     });
   });
 
+  it('unescapes escaped characters inside entries', () => {
+    expect(
+      POParser.parse(`
+msgid "hello"
+msgstr "Line 1\\nLine \\"2\\" with \\\\ tab\\tcarriage\\rreturn plain letters n r t"
+`)
+    ).toEqual({
+      messages: [
+        {
+          id: 'hello',
+          message: 'Line 1\nLine "2" with \\ tab\tcarriage\rreturn plain letters n r t'
+        }
+      ]
+    });
+  });
+
   describe('error handling', () => {
     it('throws for incomplete quoted strings', () => {
       expect(() =>
@@ -662,6 +678,23 @@ describe('serialize', () => {
       "#, fuzzy, c-format
       msgid "hello"
       msgstr "Hello World"
+      "
+    `);
+  });
+
+  it('serializes strings containing special characters', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            id: 'hello',
+            message: 'Line 1\nLine "2" with \\ tab\tcarriage\rreturn'
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "msgid "hello"
+      msgstr "Line 1\\nLine \\"2\\" with \\\\ tab\\tcarriage\\rreturn"
       "
     `);
   });

@@ -44,6 +44,21 @@ export default class POParser {
   private static readonly FILE_COLUMN_SEPARATOR = ':';
   private static readonly META_SEPARATOR = ':';
   private static readonly FLAG_SEPARATOR = ', ';
+  private static readonly ESCAPE_LOOKUP: Record<string, string> = {
+    '\\': '\\',
+    '"': '"',
+    '\n': 'n',
+    '\r': 'r',
+    '\t': 't'
+  };
+  private static readonly UNESCAPE_LOOKUP: Record<string, string> =
+    Object.entries(POParser.ESCAPE_LOOKUP).reduce<Record<string, string>>(
+      (acc, [char, code]) => {
+        acc[code] = char;
+        return acc;
+      },
+      {}
+    );
 
   public static parse(content: string): Catalog {
     const lines = POParser.splitLines(content);
@@ -68,9 +83,10 @@ export default class POParser {
 
       if (state === 'meta') {
         if (line.startsWith(POParser.QUOTE)) {
-          const metaLine = POParser.extractQuotedString(line, state);
-          const cleaned = metaLine.endsWith(POParser.NEWLINE)
-            ? metaLine.slice(0, -2)
+          const rawMetaLine = POParser.extractQuotedString(line, state);
+          const metaLine = POParser.unescape(rawMetaLine);
+          const cleaned = metaLine.endsWith('\n')
+            ? metaLine.slice(0, -1)
             : metaLine;
 
           const separatorIndex = cleaned.indexOf(POParser.META_SEPARATOR);
@@ -149,9 +165,11 @@ export default class POParser {
         // msgctxt
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGCTXT)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgctxt = POParser.extractQuotedString(
-            line.substring(POParser.KEYWORDS.MSGCTXT.length + 1),
-            state
+          entry.msgctxt = POParser.unescape(
+            POParser.extractQuotedString(
+              line.substring(POParser.KEYWORDS.MSGCTXT.length + 1),
+              state
+            )
           );
           continue;
         }
@@ -159,9 +177,11 @@ export default class POParser {
         // msgid
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGID)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgid = POParser.extractQuotedString(
-            line.substring(POParser.KEYWORDS.MSGID.length + 1),
-            state
+          entry.msgid = POParser.unescape(
+            POParser.extractQuotedString(
+              line.substring(POParser.KEYWORDS.MSGID.length + 1),
+              state
+            )
           );
 
           if (POParser.isMetaEntry(entry, messages)) {
@@ -174,9 +194,11 @@ export default class POParser {
         // msgstr
         if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGSTR)) {
           entry = POParser.ensureEntry(entry);
-          entry.msgstr = POParser.extractQuotedString(
-            line.substring(POParser.KEYWORDS.MSGSTR.length + 1),
-            state
+          entry.msgstr = POParser.unescape(
+            POParser.extractQuotedString(
+              line.substring(POParser.KEYWORDS.MSGSTR.length + 1),
+              state
+            )
           );
 
           if (POParser.isMetaEntry(entry, messages)) {
@@ -224,7 +246,9 @@ export default class POParser {
       );
       for (const [key, value] of Object.entries(catalog.meta)) {
         lines.push(
-          `${POParser.QUOTE}${key}${POParser.META_SEPARATOR} ${value}${POParser.NEWLINE}${POParser.QUOTE}`
+          `${POParser.QUOTE}${key}${POParser.META_SEPARATOR} ${POParser.escape(
+            value
+          )}${POParser.NEWLINE}${POParser.QUOTE}`
         );
       }
       lines.push('');
@@ -266,15 +290,21 @@ export default class POParser {
 
         if (msgctxt) {
           lines.push(
-            `${POParser.KEYWORDS.MSGCTXT} ${POParser.QUOTE}${msgctxt}${POParser.QUOTE}`
+            `${POParser.KEYWORDS.MSGCTXT} ${POParser.QUOTE}${POParser.escape(
+              msgctxt
+            )}${POParser.QUOTE}`
           );
         }
 
         lines.push(
-          `${POParser.KEYWORDS.MSGID} ${POParser.QUOTE}${msgid}${POParser.QUOTE}`
+          `${POParser.KEYWORDS.MSGID} ${POParser.QUOTE}${POParser.escape(
+            msgid
+          )}${POParser.QUOTE}`
         );
         lines.push(
-          `${POParser.KEYWORDS.MSGSTR} ${POParser.QUOTE}${message.message}${POParser.QUOTE}`
+          `${POParser.KEYWORDS.MSGSTR} ${POParser.QUOTE}${POParser.escape(
+            message.message
+          )}${POParser.QUOTE}`
         );
         lines.push('');
       }
@@ -327,15 +357,46 @@ export default class POParser {
 
   private static extractQuotedString(line: string, state?: State): string {
     const trimmed = line.trim();
-    const endIndex = trimmed.indexOf(POParser.QUOTE, POParser.QUOTE.length);
 
-    if (endIndex === -1) {
+    if (!trimmed.startsWith(POParser.QUOTE)) {
+      POParser.throwWithLine('Incomplete quoted string', line);
+    }
+
+    if (!trimmed.endsWith(POParser.QUOTE)) {
       if (state === 'meta') {
         return trimmed.substring(POParser.QUOTE.length);
       }
       POParser.throwWithLine('Incomplete quoted string', line);
     }
 
+    const endIndex = trimmed.length - POParser.QUOTE.length;
     return trimmed.substring(POParser.QUOTE.length, endIndex);
+  }
+
+  private static escape(value: string): string {
+    let result = '';
+    for (const char of value) {
+      const mapped = POParser.ESCAPE_LOOKUP[char];
+      result += mapped != null ? `\\${mapped}` : char;
+    }
+    return result;
+  }
+
+  private static unescape(value: string): string {
+    let result = '';
+    for (let i = 0; i < value.length; i++) {
+      const char = value[i];
+      if (char === '\\' && i + 1 < value.length) {
+        const nextChar = value[i + 1];
+        const mapped = POParser.UNESCAPE_LOOKUP[nextChar];
+        if (mapped != null) {
+          result += mapped;
+          i++;
+          continue;
+        }
+      }
+      result += char;
+    }
+    return result;
   }
 }
