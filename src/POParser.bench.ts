@@ -41,7 +41,7 @@ const sampleCatalog = {
       msgctxt: 'ui.button',
       msgid: 'submit',
       msgstr: 'Submit',
-      description: 'Button text for submit action',
+      extractedComments: ['Button text for submit action'],
       references: [{path: 'src/components/Button.tsx'}]
     },
     {

@@ -38,7 +38,7 @@ const catalog = {
     {
       msgid: '+YJVTi',
       msgstr: 'Hey',
-      description: 'Greets the user',
+      extractedComments: ['Greets the user'],
       references: [{path: 'src/Greeting.tsx'}]
     }
   ]
@@ -52,7 +52,7 @@ const result = POParser.serialize(catalog);
 - `msgid` and `msgstr` (message entries)
 - `msgctxt` (message context for namespacing)
 - References (`#:` comments)
-- Extracted comments (`#.` comments, used as descriptions)
+- Extracted comments (`#.` comments)
 - Flag comments (`#,` comments, e.g. `#, fuzzy`)
 - Metadata (from empty `msgid`/`msgstr` entry at the beginning)
 - Single-line quoted strings

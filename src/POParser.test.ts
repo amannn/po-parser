@@ -203,7 +203,26 @@ msgstr "Hey"
         {
           msgid: '+YJVTi',
           msgstr: 'Hey',
-          description: 'Shown on home screen'
+          extractedComments: ['Shown on home screen']
+        }
+      ]
+    });
+  });
+
+  it('parses multiple extracted comments', () => {
+    expect(
+      POParser.parse(`
+#. First comment
+#. Second comment
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          extractedComments: ['First comment', 'Second comment']
         }
       ]
     });
@@ -272,7 +291,7 @@ msgstr "Submit"
           msgctxt: 'ui.button',
           msgid: 'submit',
           msgstr: 'Submit',
-          description: 'Button text for submit action',
+          extractedComments: ['Button text for submit action'],
           references: [
             {
               path: 'src/components/Button.tsx'
@@ -610,7 +629,7 @@ describe('serialize', () => {
             msgctxt: 'ui.button',
             msgid: 'save',
             msgstr: 'Save',
-            description: 'Save button tooltip',
+            extractedComments: ['Save button tooltip'],
             references: [
               {path: 'src/components/Button.tsx'},
               {path: 'src/pages/Profile.tsx'}

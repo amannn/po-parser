@@ -3,7 +3,7 @@ export type Entry = {
   msgid: string;
   msgstr: string;
   references?: Array<{path: string}>;
-  description?: string;
+  extractedComments?: Array<string>;
   flags?: Array<string>;
 };
 
@@ -137,9 +137,11 @@ export default class POParser {
         // Extracted comments
         if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.EXTRACTED)) {
           entry = POParser.ensureEntry(entry);
-          entry.description = line
+          const comment = line
             .substring(POParser.COMMENTS.EXTRACTED.length)
             .trim();
+          entry.extractedComments ??= [];
+          entry.extractedComments.push(comment);
           continue;
         }
 
@@ -251,8 +253,10 @@ export default class POParser {
     // Messages
     if (catalog.messages) {
       for (const entry of catalog.messages) {
-        if (entry.description) {
-          lines.push(`${POParser.COMMENTS.EXTRACTED} ${entry.description}`);
+        if (entry.extractedComments && entry.extractedComments.length > 0) {
+          for (const comment of entry.extractedComments) {
+            lines.push(`${POParser.COMMENTS.EXTRACTED} ${comment}`);
+          }
         }
 
         if (entry.references && entry.references.length > 0) {
@@ -328,7 +332,7 @@ export default class POParser {
       msgctxt: entry.msgctxt,
       msgid: entry.msgid,
       msgstr: entry.msgstr,
-      description: entry.description,
+      extractedComments: entry.extractedComments,
       references: entry.references,
       flags: entry.flags
     };
