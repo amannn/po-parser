@@ -2,7 +2,7 @@
 
 Parses and serializes `.po` file content.
 
-Zero-dependency. ~4kb minified.
+Zero-dependency. ~2kb minified & gzipped.
 
 ## Usage
 
