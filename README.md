@@ -36,8 +36,8 @@ const catalog = {
   },
   messages: [
     {
-      id: '+YJVTi',
-      message: 'Hey',
+      msgid: '+YJVTi',
+      msgstr: 'Hey',
       description: 'Greets the user',
       references: [{path: 'src/Greeting.tsx'}]
     }
