@@ -648,6 +648,26 @@ describe('serialize', () => {
     `);
   });
 
+  it('serializes multiple extracted comments', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            msgid: 'hello',
+            msgstr: 'Hello',
+            extractedComments: ['First comment', 'Second comment']
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "#. First comment
+      #. Second comment
+      msgid "hello"
+      msgstr "Hello"
+      "
+    `);
+  });
+
   it('serializes nested namespaces correctly', () => {
     expect(
       POParser.serialize({
