@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.0](https://github.com/amannn/po-parser/compare/v1.0.2...v2.0.0) (2025-12-10)
+
+### ⚠ BREAKING CHANGES
+
+* Replace `Message` with `Entry` type and use PO spec terminology (#4)
+
+### Code Refactoring
+
+* Replace `Message` with `Entry` type and use PO spec terminology ([#4](https://github.com/amannn/po-parser/issues/4)) ([fffca3c](https://github.com/amannn/po-parser/commit/fffca3c0d2542bf0ad3487894f8049c1bdfe8939))
+
 ## [1.0.2](https://github.com/amannn/po-parser/compare/v1.0.1...v1.0.2) (2025-11-25)
 
 ### Bug Fixes
