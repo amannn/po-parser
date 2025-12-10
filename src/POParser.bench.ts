@@ -38,24 +38,26 @@ const sampleCatalog = {
   },
   messages: [
     {
-      id: 'ui.button.submit',
-      message: 'Submit',
-      description: 'Button text for submit action',
+      msgctxt: 'ui.button',
+      msgid: 'submit',
+      msgstr: 'Submit',
+      extractedComments: ['Button text for submit action'],
       references: [{path: 'src/components/Button.tsx'}]
     },
     {
-      id: 'hello',
-      message: 'Hello World',
+      msgid: 'hello',
+      msgstr: 'Hello World',
       references: [{path: 'src/components/Greeting.tsx'}]
     },
     {
-      id: 'goodbye',
-      message: 'Goodbye',
+      msgid: 'goodbye',
+      msgstr: 'Goodbye',
       references: [{path: 'src/components/Farewell.tsx'}]
     },
     {
-      id: 'ui.greeting.welcome',
-      message: 'Welcome',
+      msgctxt: 'ui.greeting',
+      msgid: 'welcome',
+      msgstr: 'Welcome',
       references: [{path: 'src/components/Greeting.tsx'}]
     }
   ]

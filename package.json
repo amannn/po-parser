@@ -21,6 +21,9 @@
     "parse",
     "serialize"
   ],
+  "files": [
+    "dist"
+  ],
   "author": "Jan Amann <jan@amann.work>",
   "license": "MIT",
   "packageManager": "pnpm@10.17.1",

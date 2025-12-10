@@ -1,26 +1,18 @@
-export type Message = {
-  id: string;
-  message: string;
-  description?: string;
+export type Entry = {
+  msgctxt?: string;
+  msgid: string;
+  msgstr: string;
   references?: Array<{path: string}>;
+  extractedComments?: Array<string>;
   flags?: Array<string>;
 };
 
 type Catalog = {
   meta?: Record<string, string>;
-  messages?: Array<Message>;
+  messages?: Array<Entry>;
 };
 
 type State = 'entry' | 'meta';
-
-type Entry = {
-  msgctxt?: string;
-  msgid?: string;
-  msgstr?: string;
-  references?: Array<{path: string}>;
-  description?: string;
-  flags?: Array<string>;
-};
 
 export default class POParser {
   private static readonly KEYWORDS = {
@@ -38,7 +30,6 @@ export default class POParser {
     PREVIOUS: '#|'
   } as const;
 
-  private static readonly NAMESPACE_SEPARATOR = '.';
   private static readonly QUOTE = '"';
   private static readonly NEWLINE = '\\n';
   private static readonly FILE_COLUMN_SEPARATOR = ':';
@@ -62,11 +53,11 @@ export default class POParser {
 
   public static parse(content: string): Catalog {
     const lines = POParser.splitLines(content);
-    const messages: Array<Message> = [];
+    const messages: Array<Entry> = [];
     const meta: Record<string, string> = {};
 
     let state: State = 'entry';
-    let entry: Entry | undefined;
+    let entry: Partial<Entry> | undefined;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -146,9 +137,11 @@ export default class POParser {
         // Extracted comments
         if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.EXTRACTED)) {
           entry = POParser.ensureEntry(entry);
-          entry.description = line
+          const comment = line
             .substring(POParser.COMMENTS.EXTRACTED.length)
             .trim();
+          entry.extractedComments ??= [];
+          entry.extractedComments.push(comment);
           continue;
         }
 
@@ -229,7 +222,10 @@ export default class POParser {
     };
   }
 
-  private static isMetaEntry(entry: Entry, messages: Array<Message>): boolean {
+  private static isMetaEntry(
+    entry: Partial<Entry>,
+    messages: Array<Entry>
+  ): boolean {
     return messages.length === 0 && entry.msgid === '' && entry.msgstr === '';
   }
 
@@ -256,54 +252,43 @@ export default class POParser {
 
     // Messages
     if (catalog.messages) {
-      for (const message of catalog.messages) {
-        if (message.description) {
-          lines.push(`${POParser.COMMENTS.EXTRACTED} ${message.description}`);
+      for (const entry of catalog.messages) {
+        if (entry.extractedComments && entry.extractedComments.length > 0) {
+          for (const comment of entry.extractedComments) {
+            lines.push(`${POParser.COMMENTS.EXTRACTED} ${comment}`);
+          }
         }
 
-        if (message.references && message.references.length > 0) {
-          for (const ref of message.references) {
+        if (entry.references && entry.references.length > 0) {
+          for (const ref of entry.references) {
             lines.push(`${POParser.COMMENTS.REFERENCE} ${ref.path}`);
           }
         }
 
-        if (message.flags && message.flags.length > 0) {
+        if (entry.flags && entry.flags.length > 0) {
           lines.push(
-            `${POParser.COMMENTS.FLAG} ${message.flags.join(
+            `${POParser.COMMENTS.FLAG} ${entry.flags.join(
               POParser.FLAG_SEPARATOR
             )}`
           );
         }
 
-        let msgctxt: string | undefined;
-        let msgid: string;
-
-        const lastDotIndex = message.id.lastIndexOf(
-          POParser.NAMESPACE_SEPARATOR
-        );
-        if (lastDotIndex > 0) {
-          msgctxt = message.id.substring(0, lastDotIndex);
-          msgid = message.id.substring(lastDotIndex + 1);
-        } else {
-          msgid = message.id;
-        }
-
-        if (msgctxt) {
+        if (entry.msgctxt) {
           lines.push(
             `${POParser.KEYWORDS.MSGCTXT} ${POParser.QUOTE}${POParser.escape(
-              msgctxt
+              entry.msgctxt
             )}${POParser.QUOTE}`
           );
         }
 
         lines.push(
           `${POParser.KEYWORDS.MSGID} ${POParser.QUOTE}${POParser.escape(
-            msgid
+            entry.msgid
           )}${POParser.QUOTE}`
         );
         lines.push(
           `${POParser.KEYWORDS.MSGSTR} ${POParser.QUOTE}${POParser.escape(
-            message.message
+            entry.msgstr
           )}${POParser.QUOTE}`
         );
         lines.push('');
@@ -330,26 +315,24 @@ export default class POParser {
     return content.split('\n');
   }
 
-  private static ensureEntry(entry: Entry | undefined): Entry {
+  private static ensureEntry(
+    entry: Partial<Entry> | undefined
+  ): Partial<Entry> {
     return entry || {};
   }
 
-  private static finishEntry(entry: Entry): Message {
+  private static finishEntry(entry: Partial<Entry>): Entry {
     if (entry.msgid == null || entry.msgstr == null) {
       throw new Error(
         'Incomplete message entry: both msgid and msgstr are required'
       );
     }
 
-    let fullId = entry.msgid;
-    if (entry.msgctxt) {
-      fullId = entry.msgctxt + POParser.NAMESPACE_SEPARATOR + entry.msgid;
-    }
-
     return {
-      id: fullId,
-      message: entry.msgstr,
-      description: entry.description,
+      msgctxt: entry.msgctxt,
+      msgid: entry.msgid,
+      msgstr: entry.msgstr,
+      extractedComments: entry.extractedComments,
       references: entry.references,
       flags: entry.flags
     };

@@ -11,8 +11,8 @@ msgstr "Hey"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey'
+          msgid: '+YJVTi',
+          msgstr: 'Hey'
         }
       ]
     });
@@ -27,8 +27,8 @@ msgstr ""
     ).toEqual({
       messages: [
         {
-          id: 'lNLCAE',
-          message: ''
+          msgid: 'lNLCAE',
+          msgstr: ''
         }
       ]
     });
@@ -43,8 +43,8 @@ msgstr    "Hey"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey'
+          msgid: '+YJVTi',
+          msgstr: 'Hey'
         }
       ]
     });
@@ -60,8 +60,9 @@ msgstr "Hey"
     ).toEqual({
       messages: [
         {
-          id: 'ui.greeting.+YJVTi',
-          message: 'Hey'
+          msgctxt: 'ui.greeting',
+          msgid: '+YJVTi',
+          msgstr: 'Hey'
         }
       ]
     });
@@ -83,16 +84,16 @@ msgstr "World"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey'
+          msgid: '+YJVTi',
+          msgstr: 'Hey'
         },
         {
-          id: 'fDJkF2',
-          message: 'Hello'
+          msgid: 'fDJkF2',
+          msgstr: 'Hello'
         },
         {
-          id: 'aZdGjT',
-          message: 'World'
+          msgid: 'aZdGjT',
+          msgstr: 'World'
         }
       ]
     });
@@ -108,8 +109,8 @@ msgstr "Hey"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey',
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
           references: [
             {
               path: 'src/components/Greeting.tsx'
@@ -130,8 +131,8 @@ msgstr "Hey"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey',
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
           references: [
             {
               path: 'src/components/Greeting.tsx'
@@ -153,8 +154,8 @@ msgstr "Hey"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey',
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
           references: [
             {
               path: 'src/components/Greeting.tsx'
@@ -178,8 +179,8 @@ msgstr "Hey"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey',
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
           references: [
             {
               path: 'src/components/Greeting.tsx'
@@ -200,9 +201,28 @@ msgstr "Hey"
     ).toEqual({
       messages: [
         {
-          id: '+YJVTi',
-          message: 'Hey',
-          description: 'Shown on home screen'
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          extractedComments: ['Shown on home screen']
+        }
+      ]
+    });
+  });
+
+  it('parses multiple extracted comments', () => {
+    expect(
+      POParser.parse(`
+#. First comment
+#. Second comment
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          extractedComments: ['First comment', 'Second comment']
         }
       ]
     });
@@ -268,9 +288,10 @@ msgstr "Submit"
     ).toEqual({
       messages: [
         {
-          id: 'ui.button.submit',
-          message: 'Submit',
-          description: 'Button text for submit action',
+          msgctxt: 'ui.button',
+          msgid: 'submit',
+          msgstr: 'Submit',
+          extractedComments: ['Button text for submit action'],
           references: [
             {
               path: 'src/components/Button.tsx'
@@ -293,8 +314,8 @@ msgstr "One hundred twenty three"
     ).toEqual({
       messages: [
         {
-          id: '123',
-          message: 'One hundred twenty three'
+          msgid: '123',
+          msgstr: 'One hundred twenty three'
         }
       ]
     });
@@ -334,8 +355,8 @@ msgstr "Hello"
       },
       messages: [
         {
-          id: 'hello',
-          message: 'Hello'
+          msgid: 'hello',
+          msgstr: 'Hello'
         }
       ]
     });
@@ -351,8 +372,9 @@ msgstr "Submit"
     ).toEqual({
       messages: [
         {
-          id: 'ui.button.submit.text',
-          message: 'Submit'
+          msgctxt: 'ui.button.submit',
+          msgid: 'text',
+          msgstr: 'Submit'
         }
       ]
     });
@@ -370,12 +392,12 @@ msgstr "Goodbye"
     ).toEqual({
       messages: [
         {
-          id: 'greeting',
-          message: 'Hello'
+          msgid: 'greeting',
+          msgstr: 'Hello'
         },
         {
-          id: 'farewell',
-          message: 'Goodbye'
+          msgid: 'farewell',
+          msgstr: 'Goodbye'
         }
       ]
     });
@@ -389,12 +411,12 @@ msgstr "Goodbye"
     ).toEqual({
       messages: [
         {
-          id: 'hello',
-          message: 'Hello World'
+          msgid: 'hello',
+          msgstr: 'Hello World'
         },
         {
-          id: 'goodbye',
-          message: 'Goodbye'
+          msgid: 'goodbye',
+          msgstr: 'Goodbye'
         }
       ]
     });
@@ -422,8 +444,9 @@ msgstr "Line 1\\nLine \\"2\\" with \\\\ tab\\tcarriage\\rreturn plain letters n 
     ).toEqual({
       messages: [
         {
-          id: 'hello',
-          message: 'Line 1\nLine "2" with \\ tab\tcarriage\rreturn plain letters n r t'
+          msgid: 'hello',
+          msgstr:
+            'Line 1\nLine "2" with \\ tab\tcarriage\rreturn plain letters n r t'
         }
       ]
     });
@@ -505,8 +528,8 @@ msgstr "Hey"`)
       ).toEqual({
         messages: [
           {
-            id: '+YJVTi',
-            message: 'Hey',
+            msgid: '+YJVTi',
+            msgstr: 'Hey',
             flags: ['fuzzy']
           }
         ]
@@ -522,8 +545,8 @@ msgstr "Hey"`)
       ).toEqual({
         messages: [
           {
-            id: '+YJVTi',
-            message: 'Hey',
+            msgid: '+YJVTi',
+            msgstr: 'Hey',
             flags: ['fuzzy', 'c-format']
           }
         ]
@@ -563,8 +586,8 @@ describe('serialize', () => {
     expect(
       POParser.serialize({
         messages: [
-          {id: 'hello', message: 'Hello World'},
-          {id: 'goodbye', message: 'Goodbye'}
+          {msgid: 'hello', msgstr: 'Hello World'},
+          {msgid: 'goodbye', msgstr: 'Goodbye'}
         ]
       })
     ).toMatchInlineSnapshot(`
@@ -584,7 +607,7 @@ describe('serialize', () => {
           'Content-Type': 'text/plain; charset=UTF-8',
           Language: 'en'
         },
-        messages: [{id: 'welcome', message: 'Welcome'}]
+        messages: [{msgid: 'welcome', msgstr: 'Welcome'}]
       })
     ).toMatchInlineSnapshot(`
       "msgid ""
@@ -603,9 +626,10 @@ describe('serialize', () => {
       POParser.serialize({
         messages: [
           {
-            id: 'ui.button.save',
-            message: 'Save',
-            description: 'Save button tooltip',
+            msgctxt: 'ui.button',
+            msgid: 'save',
+            msgstr: 'Save',
+            extractedComments: ['Save button tooltip'],
             references: [
               {path: 'src/components/Button.tsx'},
               {path: 'src/pages/Profile.tsx'}
@@ -624,12 +648,32 @@ describe('serialize', () => {
     `);
   });
 
+  it('serializes multiple extracted comments', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            msgid: 'hello',
+            msgstr: 'Hello',
+            extractedComments: ['First comment', 'Second comment']
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "#. First comment
+      #. Second comment
+      msgid "hello"
+      msgstr "Hello"
+      "
+    `);
+  });
+
   it('serializes nested namespaces correctly', () => {
     expect(
       POParser.serialize({
         messages: [
-          {id: 'ui.button.submit.text', message: 'Submit'},
-          {id: 'simple.message', message: 'Hello'}
+          {msgctxt: 'ui.button.submit', msgid: 'text', msgstr: 'Submit'},
+          {msgctxt: 'simple', msgid: 'message', msgstr: 'Hello'}
         ]
       })
     ).toMatchInlineSnapshot(`
@@ -649,8 +693,8 @@ describe('serialize', () => {
       POParser.serialize({
         messages: [
           {
-            id: 'hello',
-            message: 'Hello World',
+            msgid: 'hello',
+            msgstr: 'Hello World',
             flags: ['fuzzy']
           }
         ]
@@ -668,8 +712,8 @@ describe('serialize', () => {
       POParser.serialize({
         messages: [
           {
-            id: 'hello',
-            message: 'Hello World',
+            msgid: 'hello',
+            msgstr: 'Hello World',
             flags: ['fuzzy', 'c-format']
           }
         ]
@@ -687,8 +731,8 @@ describe('serialize', () => {
       POParser.serialize({
         messages: [
           {
-            id: 'hello',
-            message: 'Line 1\nLine "2" with \\ tab\tcarriage\rreturn'
+            msgid: 'hello',
+            msgstr: 'Line 1\nLine "2" with \\ tab\tcarriage\rreturn'
           }
         ]
       })

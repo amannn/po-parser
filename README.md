@@ -2,7 +2,7 @@
 
 Parses and serializes `.po` file content.
 
-Zero-dependency. ~4kb minified.
+Zero-dependency. ~2kb minified & gzipped.
 
 ## Usage
 
@@ -36,9 +36,9 @@ const catalog = {
   },
   messages: [
     {
-      id: '+YJVTi',
-      message: 'Hey',
-      description: 'Greets the user',
+      msgid: '+YJVTi',
+      msgstr: 'Hey',
+      extractedComments: ['Greets the user'],
       references: [{path: 'src/Greeting.tsx'}]
     }
   ]
@@ -52,7 +52,7 @@ const result = POParser.serialize(catalog);
 - `msgid` and `msgstr` (message entries)
 - `msgctxt` (message context for namespacing)
 - References (`#:` comments)
-- Extracted comments (`#.` comments, used as descriptions)
+- Extracted comments (`#.` comments)
 - Flag comments (`#,` comments, e.g. `#, fuzzy`)
 - Metadata (from empty `msgid`/`msgstr` entry at the beginning)
 - Single-line quoted strings
