@@ -22,7 +22,9 @@
   },
   "scripts": {
     "build": "bunchee",
-    "lint": "tsc --noEmit",
+    "lint": "pnpm run lint:source && pnpm run lint:package",
+    "lint:source": "tsc --noEmit",
+    "lint:package": "publint && attw --pack",
     "test": "vitest",
     "prepublishOnly": "pnpm lint && pnpm test && pnpm build"
   },
@@ -41,6 +43,7 @@
     "provenance": true
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
@@ -49,6 +52,7 @@
     "@semantic-release/release-notes-generator": "^14.1.0",
     "bunchee": "^6.6.2",
     "conventional-changelog-conventionalcommits": "^9.1.0",
+    "publint": "^0.3.16",
     "semantic-release": "^25.0.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.9"
