@@ -135,7 +135,8 @@ msgstr "Hey"
           msgstr: 'Hey',
           references: [
             {
-              path: 'src/components/Greeting.tsx'
+              path: 'src/components/Greeting.tsx',
+              line: 120
             }
           ]
         }
@@ -158,10 +159,12 @@ msgstr "Hey"
           msgstr: 'Hey',
           references: [
             {
-              path: 'src/components/Greeting.tsx'
+              path: 'src/components/Greeting.tsx',
+              line: 120
             },
             {
-              path: 'src/components/Greeting.tsx'
+              path: 'src/components/Greeting.tsx',
+              line: 121
             }
           ]
         }
@@ -169,7 +172,35 @@ msgstr "Hey"
     });
   });
 
-  it('ignores line and column numbers in references', () => {
+  it('parses same file with different line numbers', () => {
+    expect(
+      POParser.parse(`
+#: src/components/Greeting.tsx:14
+#: src/components/Greeting.tsx:28
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          references: [
+            {
+              path: 'src/components/Greeting.tsx',
+              line: 14
+            },
+            {
+              path: 'src/components/Greeting.tsx',
+              line: 28
+            }
+          ]
+        }
+      ]
+    });
+  });
+
+  it('ignores column numbers in references', () => {
     expect(
       POParser.parse(`
 #: src/components/Greeting.tsx:120:15
@@ -183,7 +214,8 @@ msgstr "Hey"
           msgstr: 'Hey',
           references: [
             {
-              path: 'src/components/Greeting.tsx'
+              path: 'src/components/Greeting.tsx',
+              line: 120
             }
           ]
         }
@@ -294,10 +326,12 @@ msgstr "Submit"
           extractedComments: ['Button text for submit action'],
           references: [
             {
-              path: 'src/components/Button.tsx'
+              path: 'src/components/Button.tsx',
+              line: 15
             },
             {
-              path: 'src/components/Button.tsx'
+              path: 'src/components/Button.tsx',
+              line: 20
             }
           ]
         }
@@ -641,6 +675,31 @@ describe('serialize', () => {
       "#. Save button tooltip
       #: src/components/Button.tsx
       #: src/pages/Profile.tsx
+      msgctxt "ui.button"
+      msgid "save"
+      msgstr "Save"
+      "
+    `);
+  });
+
+  it('serializes messages with references including line numbers', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            msgctxt: 'ui.button',
+            msgid: 'save',
+            msgstr: 'Save',
+            references: [
+              {path: 'src/components/Button.tsx', line: 15},
+              {path: 'src/pages/Profile.tsx', line: 20}
+            ]
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "#: src/components/Button.tsx:15
+      #: src/pages/Profile.tsx:20
       msgctxt "ui.button"
       msgid "save"
       msgstr "Save"
