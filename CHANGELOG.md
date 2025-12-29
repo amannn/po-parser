@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.1](https://github.com/amannn/po-parser/compare/v2.1.0...v2.1.1) (2025-12-29)
+
+### Bug Fixes
+
+* Retry publish ([25ba9eb](https://github.com/amannn/po-parser/commit/25ba9eb7f5ae91ffc7d3720981d32cbf64b922c6))
+
 ## [2.1.0](https://github.com/amannn/po-parser/compare/v2.0.0...v2.1.0) (2025-12-29)
 
 ### Features
