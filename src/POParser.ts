@@ -275,7 +275,7 @@ export default class POParser {
         if (entry.references && entry.references.length > 0) {
           for (const ref of entry.references) {
             let refString = ref.path;
-            if (ref.line !== undefined) {
+            if (ref.line) {
               refString += `${POParser.FILE_COLUMN_SEPARATOR}${ref.line}`;
             }
             lines.push(`${POParser.COMMENTS.REFERENCE} ${refString}`);
