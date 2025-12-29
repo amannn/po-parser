@@ -132,7 +132,7 @@ export default class POParser {
           let lineNumber: number | undefined;
 
           if (parts.length > 1) {
-            const parsedLine = parseInt(parts[1], 10);
+            const parsedLine = parseInt(parts[1]);
             if (!isNaN(parsedLine)) {
               lineNumber = parsedLine;
             }
@@ -140,7 +140,7 @@ export default class POParser {
 
           entry.references ??= [];
           const reference: {path: string; line?: number} = {path};
-          if (lineNumber !== undefined) {
+          if (lineNumber) {
             reference.line = lineNumber;
           }
           entry.references.push(reference);
