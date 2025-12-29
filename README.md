@@ -51,7 +51,7 @@ const result = POParser.serialize(catalog);
 
 - `msgid` and `msgstr` (message entries)
 - `msgctxt` (message context for namespacing)
-- References (`#:` comments) — supports optional line numbers
+- References (`#:` comments, with optional line numbers)
 - Extracted comments (`#.` comments)
 - Flag comments (`#,` comments, e.g. `#, fuzzy`)
 - Metadata (from empty `msgid`/`msgstr` entry at the beginning)
