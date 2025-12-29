@@ -2,7 +2,7 @@ export type Entry = {
   msgctxt?: string;
   msgid: string;
   msgstr: string;
-  references?: Array<{path: string}>;
+  references?: Array<{path: string; line?: number}>;
   extractedComments?: Array<string>;
   flags?: Array<string>;
 };
@@ -123,14 +123,27 @@ export default class POParser {
         // Reference comments
         if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.REFERENCE)) {
           entry = POParser.ensureEntry(entry);
-          // Only use the path part, ignore line and column numbers
-          const path = line
+          const parts = line
             .substring(POParser.COMMENTS.REFERENCE.length)
             .trim()
-            .split(POParser.FILE_COLUMN_SEPARATOR)
-            .at(0)!;
+            .split(POParser.FILE_COLUMN_SEPARATOR);
+          
+          const path = parts[0];
+          let lineNumber: number | undefined;
+
+          if (parts.length > 1) {
+            const parsedLine = parseInt(parts[1], 10);
+            if (!isNaN(parsedLine)) {
+              lineNumber = parsedLine;
+            }
+          }
+
           entry.references ??= [];
-          entry.references.push({path});
+          const reference: {path: string; line?: number} = {path};
+          if (lineNumber !== undefined) {
+            reference.line = lineNumber;
+          }
+          entry.references.push(reference);
           continue;
         }
 
@@ -261,7 +274,11 @@ export default class POParser {
 
         if (entry.references && entry.references.length > 0) {
           for (const ref of entry.references) {
-            lines.push(`${POParser.COMMENTS.REFERENCE} ${ref.path}`);
+            let refString = ref.path;
+            if (ref.line !== undefined) {
+              refString += `${POParser.FILE_COLUMN_SEPARATOR}${ref.line}`;
+            }
+            lines.push(`${POParser.COMMENTS.REFERENCE} ${refString}`);
           }
         }
 
