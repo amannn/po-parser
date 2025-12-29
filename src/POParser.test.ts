@@ -172,6 +172,34 @@ msgstr "Hey"
     });
   });
 
+  it('parses same file with different line numbers', () => {
+    expect(
+      POParser.parse(`
+#: src/components/Greeting.tsx:14
+#: src/components/Greeting.tsx:28
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          references: [
+            {
+              path: 'src/components/Greeting.tsx',
+              line: 14
+            },
+            {
+              path: 'src/components/Greeting.tsx',
+              line: 28
+            }
+          ]
+        }
+      ]
+    });
+  });
+
   it('ignores column numbers in references', () => {
     expect(
       POParser.parse(`
