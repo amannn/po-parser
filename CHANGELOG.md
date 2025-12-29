@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.0](https://github.com/amannn/po-parser/compare/v2.0.0...v2.1.0) (2025-12-29)
+
+### Features
+
+* Reference line number support ([#7](https://github.com/amannn/po-parser/issues/7)) ([87e2aa3](https://github.com/amannn/po-parser/commit/87e2aa31ed17e0519b07f1b988201ac6cb332f64))
+
 ## [2.0.0](https://github.com/amannn/po-parser/compare/v1.0.2...v2.0.0) (2025-12-10)
 
 ### ⚠ BREAKING CHANGES
