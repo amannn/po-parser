@@ -55,11 +55,10 @@ const result = POParser.serialize(catalog);
 - Extracted comments (`#.` comments)
 - Flag comments (`#,` comments, e.g. `#, fuzzy`)
 - Metadata (from empty `msgid`/`msgstr` entry at the beginning)
-- Single-line quoted strings
+- Multi-line strings (parsed as single-line strings)
 
 ## Unsupported features
 
 - Translator comments (`#` comments)
 - Previous string key comments (`#|` comments)
 - Plural forms (`msgid_plural`)
-- Multi-line strings
