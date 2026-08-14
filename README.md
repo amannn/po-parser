@@ -53,13 +53,12 @@ const result = POParser.serialize(catalog);
 - `msgctxt` (message context for namespacing)
 - References (`#:` comments, with optional line numbers)
 - Extracted comments (`#.` comments)
+- Translator comments (`#` comments)
 - Flag comments (`#,` comments, e.g. `#, fuzzy`)
 - Metadata (from empty `msgid`/`msgstr` entry at the beginning)
-- Single-line quoted strings
+- Multi-line strings (parsed by concatenating continuation lines; serialization always emits single-line strings)
 
 ## Unsupported features
 
-- Translator comments (`#` comments)
 - Previous string key comments (`#|` comments)
 - Plural forms (`msgid_plural`)
-- Multi-line strings

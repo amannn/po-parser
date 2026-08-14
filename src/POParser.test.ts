@@ -486,6 +486,149 @@ msgstr "Line 1\\nLine \\"2\\" with \\\\ tab\\tcarriage\\rreturn plain letters n 
     });
   });
 
+  it('parses multi-line strings', () => {
+    expect(
+      POParser.parse(`
+msgid ""
+"Very long string.\\n"
+"Even longer string"
+msgstr ""
+"translation\\n"
+"translation_2"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: 'Very long string.\nEven longer string',
+          msgstr: 'translation\ntranslation_2'
+        }
+      ]
+    });
+  });
+
+  it('parses multi-line strings that continue a non-empty first line', () => {
+    expect(
+      POParser.parse(`
+msgid "greeting"
+msgstr "Hello "
+"World"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: 'greeting',
+          msgstr: 'Hello World'
+        }
+      ]
+    });
+  });
+
+  it('parses a multi-line msgctxt', () => {
+    expect(
+      POParser.parse(`
+msgctxt "ui."
+"button"
+msgid "save"
+msgstr "Save"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgctxt: 'ui.button',
+          msgid: 'save',
+          msgstr: 'Save'
+        }
+      ]
+    });
+  });
+
+  it('parses a multi-line entry followed by metadata-like content', () => {
+    expect(
+      POParser.parse(`
+msgid ""
+msgstr ""
+"Language: en\\n"
+
+msgid ""
+"first"
+msgstr ""
+"translation"
+`)
+    ).toEqual({
+      meta: {
+        Language: 'en'
+      },
+      messages: [
+        {
+          msgid: 'first',
+          msgstr: 'translation'
+        }
+      ]
+    });
+  });
+
+  it('parses a translator comment', () => {
+    expect(
+      POParser.parse(`
+# Shown on home screen
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          translatorComments: ['Shown on home screen']
+        }
+      ]
+    });
+  });
+
+  it('parses multiple translator comments including empty ones', () => {
+    expect(
+      POParser.parse(`
+# First paragraph
+#
+# Second paragraph
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          translatorComments: ['First paragraph', '', 'Second paragraph']
+        }
+      ]
+    });
+  });
+
+  it('parses translator comments alongside other comment types', () => {
+    expect(
+      POParser.parse(`
+# A note from the translator
+#. Shown on home screen
+#: src/components/Greeting.tsx:12
+#, fuzzy
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+    ).toEqual({
+      messages: [
+        {
+          msgid: '+YJVTi',
+          msgstr: 'Hey',
+          translatorComments: ['A note from the translator'],
+          extractedComments: ['Shown on home screen'],
+          references: [{path: 'src/components/Greeting.tsx', line: 12}],
+          flags: ['fuzzy']
+        }
+      ]
+    });
+  });
+
   describe('error handling', () => {
     it('throws for incomplete quoted strings', () => {
       expect(() =>
@@ -542,17 +685,6 @@ msgid_plural "You have %d new messages"
       );
     });
 
-    it('throws for translator comments', () => {
-      expect(() =>
-        POParser.parse(`
-# Shown on home screen
-msgid "+YJVTi"
-msgstr "Hey"`)
-      ).toThrow(
-        'Translator comments (#) are not supported, use inline descriptions instead:\n> # Shown on home screen'
-      );
-    });
-
     it('parses flag comments', () => {
       expect(
         POParser.parse(`
@@ -598,19 +730,25 @@ msgstr "Hey"`)
       );
     });
 
-    it('throws for strings with newlines', () => {
+    it('throws for a quoted line without a preceding keyword', () => {
       expect(() =>
         POParser.parse(`
-msgid ""
-"Very long string.\n"
-"Even longer string"
-msgstr ""
-"translation\n"
-"translation_2"
+"orphaned line"
+msgid "+YJVTi"
+msgstr "Hey"
 `)
-      ).toThrow(
-        'Multi-line strings are not supported, use single-line strings instead:\n> "Very long string.'
-      );
+      ).toThrow('Encountered unexpected quoted line:\n> "orphaned line"');
+    });
+
+    it('throws for a quoted line after a comment without a preceding keyword', () => {
+      expect(() =>
+        POParser.parse(`
+#. Some comment
+"orphaned line"
+msgid "+YJVTi"
+msgstr "Hey"
+`)
+      ).toThrow('Encountered unexpected quoted line:\n> "orphaned line"');
     });
   });
 });
@@ -781,6 +919,46 @@ describe('serialize', () => {
       "#, fuzzy, c-format
       msgid "hello"
       msgstr "Hello World"
+      "
+    `);
+  });
+
+  it('serializes translator comments', () => {
+    expect(
+      POParser.serialize({
+        messages: [
+          {
+            msgid: 'hello',
+            msgstr: 'Hello',
+            translatorComments: ['First paragraph', '', 'Second paragraph'],
+            extractedComments: ['Shown on home screen']
+          }
+        ]
+      })
+    ).toMatchInlineSnapshot(`
+      "# First paragraph
+      #
+      # Second paragraph
+      #. Shown on home screen
+      msgid "hello"
+      msgstr "Hello"
+      "
+    `);
+  });
+
+  it('serializes multi-line values as single-line strings', () => {
+    const content = `
+msgid ""
+"Very long string.\\n"
+"Even longer string"
+msgstr ""
+"translation\\n"
+"translation_2"
+`;
+    expect(POParser.serialize(POParser.parse(content)))
+      .toMatchInlineSnapshot(`
+      "msgid "Very long string.\\nEven longer string"
+      msgstr "translation\\ntranslation_2"
       "
     `);
   });

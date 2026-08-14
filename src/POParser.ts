@@ -4,6 +4,7 @@ export type Entry = {
   msgstr: string;
   references?: Array<{path: string; line?: number}>;
   extractedComments?: Array<string>;
+  translatorComments?: Array<string>;
   flags?: Array<string>;
 };
 
@@ -13,6 +14,8 @@ type Catalog = {
 };
 
 type State = 'entry' | 'meta';
+
+type StringKeyword = 'msgctxt' | 'msgid' | 'msgstr';
 
 export default class POParser {
   private static readonly KEYWORDS = {
@@ -59,6 +62,9 @@ export default class POParser {
     let state: State = 'entry';
     let entry: Partial<Entry> | undefined;
 
+    // The keyword that a subsequent quoted line continues
+    let lastKeyword: StringKeyword | undefined;
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
@@ -69,6 +75,7 @@ export default class POParser {
           entry = undefined;
         }
         state = 'entry';
+        lastKeyword = undefined;
         continue;
       }
 
@@ -93,13 +100,21 @@ export default class POParser {
           );
         }
       } else {
-        // Unsupported comment types
-        if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.TRANSLATOR)) {
-          POParser.throwWithLine(
-            'Translator comments (#) are not supported, use inline descriptions instead',
-            line
-          );
+        // Translator comments
+        if (
+          line === POParser.COMMENTS.TRANSLATOR ||
+          POParser.lineStartsWithPrefix(line, POParser.COMMENTS.TRANSLATOR)
+        ) {
+          entry = POParser.ensureEntry(entry);
+          const comment = line
+            .substring(POParser.COMMENTS.TRANSLATOR.length)
+            .trim();
+          entry.translatorComments ??= [];
+          entry.translatorComments.push(comment);
+          continue;
         }
+
+        // Unsupported comment types
         if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.PREVIOUS)) {
           POParser.throwWithLine(
             'Previous string key comments (#|) are not supported',
@@ -177,6 +192,7 @@ export default class POParser {
               state
             )
           );
+          lastKeyword = 'msgctxt';
           continue;
         }
 
@@ -189,10 +205,12 @@ export default class POParser {
               state
             )
           );
+          lastKeyword = 'msgid';
 
           if (POParser.isMetaEntry(entry, messages)) {
             state = 'meta';
             entry = undefined;
+            lastKeyword = undefined;
           }
           continue;
         }
@@ -206,19 +224,23 @@ export default class POParser {
               state
             )
           );
+          lastKeyword = 'msgstr';
 
           if (POParser.isMetaEntry(entry, messages)) {
             state = 'meta';
             entry = undefined;
+            lastKeyword = undefined;
           }
           continue;
         }
 
-        // Multi-line strings are not supported in entry mode
+        // Multi-line string continuation
         if (line.startsWith(POParser.QUOTE)) {
-          POParser.throwWithLine(
-            'Multi-line strings are not supported, use single-line strings instead',
-            line
+          if (!entry || !lastKeyword || entry[lastKeyword] == null) {
+            POParser.throwWithLine('Encountered unexpected quoted line', line);
+          }
+          entry[lastKeyword] += POParser.unescape(
+            POParser.extractQuotedString(line, state)
           );
         }
       }
@@ -266,6 +288,16 @@ export default class POParser {
     // Messages
     if (catalog.messages) {
       for (const entry of catalog.messages) {
+        if (entry.translatorComments && entry.translatorComments.length > 0) {
+          for (const comment of entry.translatorComments) {
+            lines.push(
+              comment
+                ? `${POParser.COMMENTS.TRANSLATOR} ${comment}`
+                : POParser.COMMENTS.TRANSLATOR
+            );
+          }
+        }
+
         if (entry.extractedComments && entry.extractedComments.length > 0) {
           for (const comment of entry.extractedComments) {
             lines.push(`${POParser.COMMENTS.EXTRACTED} ${comment}`);
@@ -350,6 +382,7 @@ export default class POParser {
       msgid: entry.msgid,
       msgstr: entry.msgstr,
       extractedComments: entry.extractedComments,
+      translatorComments: entry.translatorComments,
       references: entry.references,
       flags: entry.flags
     };
