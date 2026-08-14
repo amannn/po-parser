@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.0](https://github.com/amannn/po-parser/compare/v2.1.1...v2.2.0) (2026-08-14)
+
+### Features
+
+* Support parsing multi-line strings ([#8](https://github.com/amannn/po-parser/issues/8)) ([1177f68](https://github.com/amannn/po-parser/commit/1177f684c34bb153f45efdeb196c8f98e33ec89b))
+
 ## [2.1.1](https://github.com/amannn/po-parser/compare/v2.1.0...v2.1.1) (2025-12-29)
 
 ### Bug Fixes

@@ -5,6 +5,8 @@ class POParser {
         const meta = {};
         let state = 'entry';
         let entry;
+        // The keyword that a subsequent quoted line continues
+        let lastKeyword;
         for(let i = 0; i < lines.length; i++){
             const line = lines[i].trim();
             // An empty line indicates the end of an entry
@@ -14,6 +16,7 @@ class POParser {
                     entry = undefined;
                 }
                 state = 'entry';
+                lastKeyword = undefined;
                 continue;
             }
             if (state === 'meta') {
@@ -85,15 +88,18 @@ class POParser {
                 if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGCTXT)) {
                     entry = POParser.ensureEntry(entry);
                     entry.msgctxt = POParser.unescape(POParser.extractQuotedString(line.substring(POParser.KEYWORDS.MSGCTXT.length + 1), state));
+                    lastKeyword = 'msgctxt';
                     continue;
                 }
                 // msgid
                 if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGID)) {
                     entry = POParser.ensureEntry(entry);
                     entry.msgid = POParser.unescape(POParser.extractQuotedString(line.substring(POParser.KEYWORDS.MSGID.length + 1), state));
+                    lastKeyword = 'msgid';
                     if (POParser.isMetaEntry(entry, messages)) {
                         state = 'meta';
                         entry = undefined;
+                        lastKeyword = undefined;
                     }
                     continue;
                 }
@@ -101,15 +107,20 @@ class POParser {
                 if (POParser.lineStartsWithPrefix(line, POParser.KEYWORDS.MSGSTR)) {
                     entry = POParser.ensureEntry(entry);
                     entry.msgstr = POParser.unescape(POParser.extractQuotedString(line.substring(POParser.KEYWORDS.MSGSTR.length + 1), state));
+                    lastKeyword = 'msgstr';
                     if (POParser.isMetaEntry(entry, messages)) {
                         state = 'meta';
                         entry = undefined;
+                        lastKeyword = undefined;
                     }
                     continue;
                 }
-                // Multi-line strings are not supported in entry mode
+                // Multi-line string continuation
                 if (line.startsWith(POParser.QUOTE)) {
-                    POParser.throwWithLine('Multi-line strings are not supported, use single-line strings instead', line);
+                    if (!entry || !lastKeyword || entry[lastKeyword] == null) {
+                        POParser.throwWithLine('Encountered unexpected quoted line', line);
+                    }
+                    entry[lastKeyword] += POParser.unescape(POParser.extractQuotedString(line, state));
                 }
             }
         }
