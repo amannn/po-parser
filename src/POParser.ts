@@ -4,7 +4,6 @@ export type Entry = {
   msgstr: string;
   references?: Array<{path: string; line?: number}>;
   extractedComments?: Array<string>;
-  translatorComments?: Array<string>;
   flags?: Array<string>;
 };
 
@@ -100,21 +99,13 @@ export default class POParser {
           );
         }
       } else {
-        // Translator comments
-        if (
-          line === POParser.COMMENTS.TRANSLATOR ||
-          POParser.lineStartsWithPrefix(line, POParser.COMMENTS.TRANSLATOR)
-        ) {
-          entry = POParser.ensureEntry(entry);
-          const comment = line
-            .substring(POParser.COMMENTS.TRANSLATOR.length)
-            .trim();
-          entry.translatorComments ??= [];
-          entry.translatorComments.push(comment);
-          continue;
-        }
-
         // Unsupported comment types
+        if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.TRANSLATOR)) {
+          POParser.throwWithLine(
+            'Translator comments (#) are not supported, use inline descriptions instead',
+            line
+          );
+        }
         if (POParser.lineStartsWithPrefix(line, POParser.COMMENTS.PREVIOUS)) {
           POParser.throwWithLine(
             'Previous string key comments (#|) are not supported',
@@ -288,16 +279,6 @@ export default class POParser {
     // Messages
     if (catalog.messages) {
       for (const entry of catalog.messages) {
-        if (entry.translatorComments && entry.translatorComments.length > 0) {
-          for (const comment of entry.translatorComments) {
-            lines.push(
-              comment
-                ? `${POParser.COMMENTS.TRANSLATOR} ${comment}`
-                : POParser.COMMENTS.TRANSLATOR
-            );
-          }
-        }
-
         if (entry.extractedComments && entry.extractedComments.length > 0) {
           for (const comment of entry.extractedComments) {
             lines.push(`${POParser.COMMENTS.EXTRACTED} ${comment}`);
@@ -382,7 +363,6 @@ export default class POParser {
       msgid: entry.msgid,
       msgstr: entry.msgstr,
       extractedComments: entry.extractedComments,
-      translatorComments: entry.translatorComments,
       references: entry.references,
       flags: entry.flags
     };

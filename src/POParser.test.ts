@@ -567,68 +567,6 @@ msgstr ""
     });
   });
 
-  it('parses a translator comment', () => {
-    expect(
-      POParser.parse(`
-# Shown on home screen
-msgid "+YJVTi"
-msgstr "Hey"
-`)
-    ).toEqual({
-      messages: [
-        {
-          msgid: '+YJVTi',
-          msgstr: 'Hey',
-          translatorComments: ['Shown on home screen']
-        }
-      ]
-    });
-  });
-
-  it('parses multiple translator comments including empty ones', () => {
-    expect(
-      POParser.parse(`
-# First paragraph
-#
-# Second paragraph
-msgid "+YJVTi"
-msgstr "Hey"
-`)
-    ).toEqual({
-      messages: [
-        {
-          msgid: '+YJVTi',
-          msgstr: 'Hey',
-          translatorComments: ['First paragraph', '', 'Second paragraph']
-        }
-      ]
-    });
-  });
-
-  it('parses translator comments alongside other comment types', () => {
-    expect(
-      POParser.parse(`
-# A note from the translator
-#. Shown on home screen
-#: src/components/Greeting.tsx:12
-#, fuzzy
-msgid "+YJVTi"
-msgstr "Hey"
-`)
-    ).toEqual({
-      messages: [
-        {
-          msgid: '+YJVTi',
-          msgstr: 'Hey',
-          translatorComments: ['A note from the translator'],
-          extractedComments: ['Shown on home screen'],
-          references: [{path: 'src/components/Greeting.tsx', line: 12}],
-          flags: ['fuzzy']
-        }
-      ]
-    });
-  });
-
   describe('error handling', () => {
     it('throws for incomplete quoted strings', () => {
       expect(() =>
@@ -682,6 +620,17 @@ msgid_plural "You have %d new messages"
 `)
       ).toThrow(
         'Plural forms (msgid_plural) are not supported, use ICU pluralization instead:\n> msgid_plural "You have %d new messages"'
+      );
+    });
+
+    it('throws for translator comments', () => {
+      expect(() =>
+        POParser.parse(`
+# Shown on home screen
+msgid "+YJVTi"
+msgstr "Hey"`)
+      ).toThrow(
+        'Translator comments (#) are not supported, use inline descriptions instead:\n> # Shown on home screen'
       );
     });
 
@@ -919,29 +868,6 @@ describe('serialize', () => {
       "#, fuzzy, c-format
       msgid "hello"
       msgstr "Hello World"
-      "
-    `);
-  });
-
-  it('serializes translator comments', () => {
-    expect(
-      POParser.serialize({
-        messages: [
-          {
-            msgid: 'hello',
-            msgstr: 'Hello',
-            translatorComments: ['First paragraph', '', 'Second paragraph'],
-            extractedComments: ['Shown on home screen']
-          }
-        ]
-      })
-    ).toMatchInlineSnapshot(`
-      "# First paragraph
-      #
-      # Second paragraph
-      #. Shown on home screen
-      msgid "hello"
-      msgstr "Hello"
       "
     `);
   });
